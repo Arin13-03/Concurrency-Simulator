@@ -136,8 +136,9 @@ concurrency-simulator/
 ## Credits
 
 - Inspired by classic operating systems and concurrency textbooks.
-- Web UI built with [Flask](https://flask.palletsprojects.com/) and vanilla JavaScript/CSS.
+- Web UI built with Flask and vanilla JavaScript/CSS.
 
 ---
+
 
 Enjoy learning about concurrency!
