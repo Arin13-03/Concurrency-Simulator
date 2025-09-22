@@ -1,0 +1,12 @@
+build/
+*.exe
+*.o
+*.obj
+*.log
+web/logs/
+web/metrics.json
+web/venv/
+__pycache__/
+*.pyc
+.vscode/
+.idea/

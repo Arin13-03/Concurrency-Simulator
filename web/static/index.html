@@ -1,0 +1,294 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Concurrency Simulator — Web UI</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      background: linear-gradient(120deg, #f0f4ff 0%, #e0ffe8 100%);
+      color: #222;
+    }
+    h1 {
+      color: #2b4cff;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px #e0e8ff;
+    }
+    button {
+      margin: 4px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      background: linear-gradient(90deg, #4f8cff, #3be8b0);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 2px 8px #d0e0ff66;
+    }
+    button:hover {
+      background: linear-gradient(90deg, #3be8b0, #4f8cff);
+      transform: scale(1.05);
+    }
+    select {
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: 1px solid #b0c4ff;
+      background: #f7faff;
+      font-size: 1em;
+    }
+    .job-bar {
+      border-radius: 8px;
+      margin: 12px 0;
+      background: linear-gradient(90deg, #4f8cff22 0%, #3be8b022 100%);
+      box-shadow: 0 2px 8px #e0f7ff66;
+      transition: background 0.2s, box-shadow 0.2s;
+      padding: 0;
+      border: 2px solid #b0e0ff;
+      overflow: hidden;
+      position: relative;
+    }
+    .job-bar:hover {
+      background: linear-gradient(90deg, #4f8cff44 0%, #3be8b044 100%);
+      box-shadow: 0 4px 16px #4f8cff33;
+    }
+    .job-bar-header {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 16px 20px;
+      font-size: 1.1em;
+      font-weight: 500;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.95em;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+    .badge.running { background: #d1ffd6; color: #1a7f2b; border: 1px solid #7be89a;}
+    .badge.finished { background: #e0e0e0; color: #555; border: 1px solid #bbb;}
+    .badge.error { background: #ffd1d1; color: #a11; border: 1px solid #ff7b7b;}
+    .badge.unknown { background: #fff6d1; color: #a17f1a; border: 1px solid #ffe87b;}
+    .job strong { color: #2b4cff; }
+    .job-bar-log {
+      background: #f7f7f7;
+      border-top: 1px solid #b0e0ff;
+      padding: 18px 24px;
+      font-size: 1em;
+      color: #222;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      white-space: pre-wrap;
+      display: none;
+      animation: fadeIn 0.3s;
+    }
+    .job-bar.open .job-bar-log {
+      display: block;
+    }
+    .job-bar.open {
+      border-color: #4f8cff;
+      background: linear-gradient(90deg, #e0f4ff 0%, #e0ffe8 100%);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    .spinner {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      border: 3px solid #b0e0ff;
+      border-top: 3px solid #4f8cff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    #mode:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px #4f8cff55;
+      border-color: #4f8cff;
+    }
+    .ripple-btn:active::after {
+      content: "";
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 120%; height: 120%;
+      background: rgba(75, 140, 255, 0.25);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0.7);
+      animation: ripple 0.4s linear;
+      pointer-events: none;
+      z-index: 1;
+    }
+    @keyframes ripple {
+      to { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+    }
+    .ripple-btn:hover {
+      box-shadow: 0 0 0 4px #3be8b055, 0 2px 12px #4f8cff44;
+      background: linear-gradient(90deg, #3be8b0, #4f8cff);
+    }
+    @keyframes pulse {
+      0% { filter: drop-shadow(0 0 0px #4f8cff); }
+      100% { filter: drop-shadow(0 0 8px #4f8cff88); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Concurrency Simulator — Web UI</h1>
+
+  <div style="margin-bottom: 24px; display: flex; align-items: center; gap: 18px;">
+    <label style="font-size:1.1em; font-weight:500; display:flex; align-items:center; gap:8px;">
+      <span style="font-size:3.3em; color:#4f8cff; animation: pulse 1.2s infinite alternate;">&#9889;</span>
+      Start simulation:
+      <select id="mode" style="transition: box-shadow 0.2s;">
+        <option value="1">1 — Dining Philosophers</option>
+        <option value="2">2 — Reader-Writer</option>
+        <option value="3">3 — Producer-Consumer</option>
+        <option value="4">4 — Work-Stealing</option>
+      </select>
+    </label>
+    <button id="startBtn" class="ripple-btn" style="position:relative; overflow:hidden;">
+      <span style="margin-right:8px;">🚀</span>Start
+    </button>
+    <button id="refreshBtn">Refresh Jobs</button>
+  </div>
+
+  <h2>Jobs</h2>
+  <div id="jobs"></div>
+
+  <script>
+    const API = '/';
+
+    function statusBadge(status) {
+      let cls = 'unknown';
+      if (status === 'running') cls = 'running';
+      else if (status === 'finished') cls = 'finished';
+      else if (status === 'error') cls = 'error';
+      return `<span class="badge ${cls}">${status}</span>`;
+    }
+
+    async function startSimulation() {
+      const mode = document.getElementById('mode').value;
+      const res = await fetch(API + 'start', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({mode: Number(mode)})
+      });
+      const data = await res.json();
+      if (res.ok) alert('Started job ' + data.job_id);
+      else alert('Error: ' + JSON.stringify(data));
+      refresh();
+    }
+
+    async function fetchLog(jid) {
+      const res = await fetch(API + 'logs/' + jid);
+      if (!res.ok) return '(No log)';
+      const data = await res.json();
+      return data.log || '(No log)';
+    }
+
+    let openJobId = null; // Track which job's log is open
+
+    let autoRefresh = setInterval(refresh, 2000);
+
+    async function refresh() {
+      const jobsRes = await fetch(API + 'jobs');
+      const jobs = jobsRes.ok ? await jobsRes.json() : {};
+
+      const jobsDiv = document.getElementById('jobs');
+      jobsDiv.innerHTML = '';
+
+      let anyRunning = false;
+
+      for (const jid in jobs) {
+        const j = jobs[jid];
+        if (j.status === 'running') anyRunning = true;
+        const bar = document.createElement('div');
+        bar.className = 'job-bar';
+        bar.innerHTML = `
+          <div class="job-bar-header">
+            <strong>Job ${jid}</strong>
+            <span>mode=${j.mode}</span>
+            ${statusBadge(j.status)}
+            <span style="color:#888">process id=${j.pid||''}</span>
+            <button class="toggle-log-btn" style="margin-left:auto; border-radius:16px; font-size:0.98em; padding:6px 18px; background:#e0f4ff; color:#2b4cff; border:1px solid #b0e0ff; cursor:pointer; transition:background 0.2s;">Open Log ▼</button>
+            <span class="spinner" style="display:none"></span>
+          </div>
+          <div class="job-bar-log" id="job-log-${jid}"></div>
+        `;
+        const toggleBtn = bar.querySelector('.toggle-log-btn');
+        toggleBtn.addEventListener('click', async function(e) {
+          e.stopPropagation();
+          const isOpen = bar.classList.contains('open');
+          // Close all others
+          document.querySelectorAll('.job-bar.open').forEach(el => {
+            el.classList.remove('open');
+            const btn = el.querySelector('.toggle-log-btn');
+            if (btn) btn.textContent = 'Open Log ▼';
+            const logDiv = el.querySelector('.job-bar-log');
+            if (logDiv) logDiv.textContent = '';
+          });
+          if (!isOpen) {
+            bar.classList.add('open');
+            toggleBtn.textContent = 'Close Log ▲';
+            openJobId = jid; // Remember which job is open
+            const logDiv = bar.querySelector('.job-bar-log');
+            const spinner = bar.querySelector('.spinner');
+            logDiv.textContent = '';
+            spinner.style.display = '';
+            const log = await fetchLog(jid);
+            spinner.style.display = 'none';
+            logDiv.textContent = log;
+          } else {
+            bar.classList.remove('open');
+            toggleBtn.textContent = 'Open Log ▼';
+            openJobId = null;
+            const logDiv = bar.querySelector('.job-bar-log');
+            if (logDiv) logDiv.textContent = '';
+          }
+        });
+
+        // Restore open log after refresh
+        if (openJobId && openJobId == jid) {
+          bar.classList.add('open');
+          toggleBtn.textContent = 'Close Log ▲';
+          const logDiv = bar.querySelector('.job-bar-log');
+          const spinner = bar.querySelector('.spinner');
+          logDiv.textContent = '';
+          spinner.style.display = '';
+          fetchLog(jid).then(log => {
+            spinner.style.display = 'none';
+            logDiv.textContent = log;
+          });
+        }
+
+        jobsDiv.appendChild(bar);
+      }
+
+      // Stop auto-refresh if all jobs are finished
+      if (!anyRunning && autoRefresh) {
+        clearInterval(autoRefresh);
+        autoRefresh = null;
+      }
+    }
+
+    document.getElementById('startBtn').addEventListener('click', startSimulation);
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      window.location.reload();
+    });
+
+    // initial refresh
+    refresh();
+    // auto-refresh every 2s (handled by autoRefresh variable)
+  </script>
+</body>
+</html>
