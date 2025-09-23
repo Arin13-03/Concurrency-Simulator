@@ -19,7 +19,7 @@ Each simulation runs as a separate job, using C++ threads and synchronization pr
 
 ### Prerequisites
 
-- **C++11 or newer** compiler (g++, clang++, or MSVC)
+- **C++17 or newer** compiler (g++, clang++, or MSVC)
 - **CMake** (for cross-platform builds)
 - **pthread** library (on Linux/macOS/MinGW)
 
@@ -40,7 +40,7 @@ cmake --build .
 If you prefer not to use CMake, compile all source files directly:
 
 ```bash
-g++ -std=c++11 -pthread src/*.cpp -o concurrency_simulator
+g++ -std=c++17 -pthread src/*.cpp -o concurrency_simulator
 ./concurrency_simulator
 ```
 
@@ -142,3 +142,4 @@ concurrency-simulator/
 
 
 Enjoy learning about concurrency!
+
