@@ -95,6 +95,11 @@ Enter the number corresponding to the simulation you want to run. The program wi
 
 ---
 
+## Demo 
+<img width="987" height="657" alt="Image" src="https://github.com/user-attachments/assets/1dbc275b-bb28-4e8b-a643-c14d64e03f7b" />
+
+---
+
 ## Project Structure
 
 ```
@@ -142,5 +147,6 @@ concurrency-simulator/
 
 
 Enjoy learning about concurrency!
+
 
 
