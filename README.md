@@ -124,7 +124,7 @@ concurrency-simulator/
 
 ## Troubleshooting
 
-- **Build errors:** Ensure your compiler supports C++11 or newer and that all dependencies are installed.
+- **Build errors:** Ensure your compiler supports C++17 or newer and that all dependencies are installed.
 - **Permission errors:** Run the simulator with appropriate permissions to write logs and metrics.
 - **Web UI not updating:** If using the web UI, ensure the backend (`app.py`) is running and accessible.
 
@@ -142,4 +142,5 @@ concurrency-simulator/
 
 
 Enjoy learning about concurrency!
+
 
