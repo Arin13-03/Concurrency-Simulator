@@ -136,8 +136,6 @@ concurrency-simulator/
 ---
 
 
----
-
 ## Credits
 
 - Inspired by classic operating systems and concurrency textbooks.
@@ -147,6 +145,7 @@ concurrency-simulator/
 
 
 Enjoy learning about concurrency!
+
 
 
 
